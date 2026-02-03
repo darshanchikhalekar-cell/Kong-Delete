@@ -11,30 +11,29 @@
           - confirm_delete == "YES"
         fail_msg: "Deletion aborted. Type YES to confirm FULL Kong deletion."
 
-    - name: Check if Kong binary exists
+    - name: Check if Kong service exists
       stat:
-        path: /usr/local/bin/kong
-      register: kong_bin
+        path: /lib/systemd/system/kong.service
+      register: kong_service
 
   tasks:
     - name: Stop Kong service
       service:
         name: kong
         state: stopped
-      when: kong_bin.stat.exists
+      when: kong_service.stat.exists
 
     - name: Disable Kong service
       service:
         name: kong
         enabled: false
-      when: kong_bin.stat.exists
+      when: kong_service.stat.exists
 
     - name: Remove Kong package
       apt:
         name: kong
         state: absent
         purge: true
-      when: kong_bin.stat.exists
 
     - name: Remove Kong configuration directory
       file:
@@ -55,4 +54,3 @@
     - name: Kong deletion success message
       debug:
         msg: "✅ Kong has been successfully deleted from this host."
-      when: kong_bin.stat.exists
