@@ -1,0 +1,55 @@
+---
+- name: FULL Kong Deletion (DANGEROUS)
+  hosts: all
+  become: true
+  gather_facts: false
+
+  pre_tasks:
+    - name: Confirm FULL Kong deletion
+      assert:
+        that:
+          - confirm_delete == "YES"
+      fail_msg: "Deletion aborted. Type YES to confirm FULL Kong deletion."
+
+  tasks:
+    - name: Stop Kong service
+      service:
+        name: kong
+        state: stopped
+      ignore_errors: true
+
+    - name: Remove Kong package
+      apt:
+        name: kong
+        state: absent
+        purge: true
+      ignore_errors: true
+
+    - name: Remove Kong config
+      file:
+        path: /etc/kong
+        state: absent
+
+    - name: Remove Kong plugins
+      file:
+        path: /usr/local/share/lua/5.1/kong/plugins
+        state: absent
+
+    - name: Remove Kong logs
+      file:
+        path: /usr/local/kong
+        state: absent
+
+    - name: Drop Kong database
+      become_user: postgres
+      postgresql_db:
+        name: kong
+        state: absent
+      ignore_errors: true
+
+    - name: Drop Kong DB user
+      become_user: postgres
+      postgresql_user:
+        name: kong
+        state: absent
+      ignore_errors: true
