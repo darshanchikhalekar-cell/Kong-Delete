@@ -1,5 +1,5 @@
 ---
-- name: FULL Kong Deletion (DANGEROUS)
+- name: FULL Kong Deletion (Kong ONLY – No PostgreSQL)
   hosts: all
   become: true
   gather_facts: false
@@ -18,6 +18,12 @@
         state: stopped
       ignore_errors: true
 
+    - name: Disable Kong service
+      service:
+        name: kong
+        enabled: false
+      ignore_errors: true
+
     - name: Remove Kong package
       apt:
         name: kong
@@ -25,31 +31,17 @@
         purge: true
       ignore_errors: true
 
-    - name: Remove Kong config
+    - name: Remove Kong configuration directory
       file:
         path: /etc/kong
         state: absent
 
-    - name: Remove Kong plugins
+    - name: Remove Kong plugins directory
       file:
         path: /usr/local/share/lua/5.1/kong/plugins
         state: absent
 
-    - name: Remove Kong logs
+    - name: Remove Kong logs directory
       file:
         path: /usr/local/kong
         state: absent
-
-    - name: Drop Kong database
-      become_user: postgres
-      postgresql_db:
-        name: kong
-        state: absent
-      ignore_errors: true
-
-    - name: Drop Kong DB user
-      become_user: postgres
-      postgresql_user:
-        name: kong
-        state: absent
-      ignore_errors: true
