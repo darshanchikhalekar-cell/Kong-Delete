@@ -9,7 +9,7 @@
       assert:
         that:
           - confirm_delete == "YES"
-      fail_msg: "Deletion aborted. Type YES to confirm FULL Kong deletion."
+        fail_msg: "Deletion aborted. Type YES to confirm FULL Kong deletion."
 
   tasks:
     - name: Stop Kong service
@@ -45,3 +45,8 @@
       file:
         path: /usr/local/kong
         state: absent
+
+  post_tasks:
+    - name: Kong deletion success message
+      debug:
+        msg: "✅ Kong has been successfully deleted from this host."
