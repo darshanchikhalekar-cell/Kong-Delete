@@ -11,25 +11,31 @@
           - confirm_delete == "YES"
         fail_msg: "Deletion aborted. Type YES to confirm FULL Kong deletion."
 
+    - name: Check if Kong is installed
+      shell: command -v kong
+      register: kong_check
+      changed_when: false
+      failed_when: false
+
   tasks:
     - name: Stop Kong service
       service:
         name: kong
         state: stopped
-      ignore_errors: true
+      when: kong_check.rc == 0
 
     - name: Disable Kong service
       service:
         name: kong
         enabled: false
-      ignore_errors: true
+      when: kong_check.rc == 0
 
     - name: Remove Kong package
       apt:
         name: kong
         state: absent
         purge: true
-      ignore_errors: true
+      when: kong_check.rc == 0
 
     - name: Remove Kong configuration directory
       file:
@@ -50,3 +56,4 @@
     - name: Kong deletion success message
       debug:
         msg: "✅ Kong has been successfully deleted from this host."
+      when: kong_check.rc == 0
